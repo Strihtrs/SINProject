@@ -3,7 +3,6 @@ package app;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.SimpleBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -45,7 +44,7 @@ public class WorldAgent extends Agent {
 
         private WorldAgent worldAgent;
 
-        public TimeBehaviour(WorldAgent worldAgent, long period) {
+        TimeBehaviour(WorldAgent worldAgent, long period) {
 
             super(worldAgent, period);
             this.worldAgent = worldAgent;
@@ -53,13 +52,7 @@ public class WorldAgent extends Agent {
 
         @Override
         public void onTick() {
-            worldAgent.time = time.plusMinutes(30);
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            System.out.println(time);
+            worldAgent.time = time.plusMinutes(28);
         }
     }
 
@@ -67,7 +60,7 @@ public class WorldAgent extends Agent {
 
         private WorldAgent agent;
 
-        public OfferRequestServer(WorldAgent worldAgent) {
+        OfferRequestServer(WorldAgent worldAgent) {
 
             this.agent = worldAgent;
         }
@@ -78,14 +71,21 @@ public class WorldAgent extends Agent {
             ACLMessage msg = agent.receive(mt);
             if(msg != null){
                 String title = msg.getContent();
-                System.out.println("Mam pici");
 
-                if(Objects.equals(title, "lux")){
-                    ACLMessage reply = msg.createReply();
-                    reply.setPerformative(ACLMessage.INFORM);
-                    reply.setContent(time.hourOfDay().getAsText());
-                    agent.send(reply);
+                ACLMessage reply = msg.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+
+                switch (title) {
+                    case "lux":
+                        System.out.println("Mam v pici lux.");
+                        reply.setContent(time.hourOfDay().getAsText());
+                        break;
+                    case "temp":
+                        System.out.println("Mam v pici temp.");
+                        reply.setContent(time.minuteOfHour().getAsText());
+                        break;
                 }
+                agent.send(reply);
             }
             else
             {
