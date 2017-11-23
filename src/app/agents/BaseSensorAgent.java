@@ -1,12 +1,9 @@
 package app.agents;
 
+import app.Helper;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
 
 import java.util.UUID;
 
@@ -30,29 +27,12 @@ public class BaseSensorAgent extends Agent {
 
         @Override
         public void action() {
-            findWorld();
+            worldAgentAID = Helper.findAgentByName(myAgent, "mr-world-wide");
         }
 
         @Override
         public boolean done() {
             return worldAgentAID != null;
-        }
-
-        private void findWorld() {
-
-            DFAgentDescription dfad = new DFAgentDescription();
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType("world");
-            dfad.addServices(sd);
-
-            DFAgentDescription[] results;
-            try {
-                results = DFService.search(this.myAgent, dfad);
-                if (results.length > 0)
-                    worldAgentAID = results[0].getName();
-            } catch (FIPAException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

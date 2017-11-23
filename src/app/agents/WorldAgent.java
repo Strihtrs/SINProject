@@ -1,6 +1,7 @@
 package app.agents;
 
 
+import app.Helper;
 import jade.core.Agent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -9,11 +10,9 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 import org.ajbrown.namemachine.NameGenerator;
@@ -24,25 +23,13 @@ import java.util.Random;
 public class WorldAgent extends Agent {
 
     private int peopleInWorld;
-    private jade.wrapper.AgentContainer peopleContainer;
+    private AgentContainer peopleContainer;
 
 
     @Override
     protected void setup() {
 
-        DFAgentDescription dfad = new DFAgentDescription();
-        dfad.setName(getAID());
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("world");
-        sd.setName("mr-world-wide");
-        dfad.addServices(sd);
-
-        try {
-            DFService.register(this, dfad);
-        } catch (FIPAException e) {
-            e.printStackTrace();
-        }
-
+        Helper.registerInDFService(this, "mr-world-wide");
 
         //peoplecontainer
         Profile pee = new ProfileImpl();
@@ -52,7 +39,7 @@ public class WorldAgent extends Agent {
         addBehaviour(new InitBehaviour());
         addBehaviour(new TimeBehaviour(this, 500));
         addBehaviour(new OfferRequestServer());
-        addBehaviour(new PersonSpawnBehaviour(this, 1000));
+        addBehaviour(new PersonSpawnBehaviour(this, 3000));
 
         super.setup();
     }
@@ -70,20 +57,25 @@ public class WorldAgent extends Agent {
 
 
             try {
-                AgentController livingRoom =
-                        roomContainer
-                                .createNewAgent("living-room", RoomAgent.class.getCanonicalName(), null);
-                livingRoom.start();
+                Agent a = new RoomAgent();
+                roomContainer.acceptNewAgent("lobby-room", a)
+                             .start();
+                Helper.registerInDFService(a, "lobby-room");
 
-                roomContainer
-                        .createNewAgent("bed-room", RoomAgent.class.getCanonicalName(), null)
-                        .start();
+                a = new RoomAgent();
+                roomContainer.acceptNewAgent("living-room", a)
+                             .start();
+                Helper.registerInDFService(a, "living-room");
+
+                a = new RoomAgent();
+                roomContainer.acceptNewAgent("bed-room", a)
+                             .start();
+                Helper.registerInDFService(a, "bed-room");
 
             } catch (StaleProxyException e) {
                 e.printStackTrace();
             }
         }
-
     }
 
     class TimeBehaviour extends TickerBehaviour {
@@ -116,15 +108,15 @@ public class WorldAgent extends Agent {
 
                 switch (title) {
                     case "lux":
-                        System.out.println("Mam v pici lux.");
+                        //System.out.println("Mam v pici lux.");
                         reply.setContent(time.hourOfDay().getAsText());
                         break;
                     case "temp":
-                        System.out.println("Mam v pici temp.");
+                        //System.out.println("Mam v pici temp.");
                         reply.setContent(time.minuteOfHour().getAsText());
                         break;
                     case "rain":
-                        System.out.println("Mam v pici rain.");
+                        //System.out.println("Mam v pici rain.");
                         float number = (float) (0.0 + (100.0) * (new Random().nextFloat()));
                         reply.setContent(String.format("%.2f", number));   // random float between 0.0 and 100.0
                         break;
