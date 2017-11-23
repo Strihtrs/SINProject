@@ -19,6 +19,6 @@ public class LuxSensorAgent extends BaseSensorAgent {
     @Override
     protected void setup() {
         super.setup();
-        addBehaviour(new SensorBehaviour<>(this, 400, "lux", 1, conversationId));
+        addBehaviour(new SensorBehaviour<>(this, 500, "lux", 1, conversationId));
     }
 }

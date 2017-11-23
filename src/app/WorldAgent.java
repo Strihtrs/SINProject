@@ -12,12 +12,16 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.joda.time.LocalTime;
 
+import java.text.DecimalFormat;
 import java.util.Objects;
+import java.util.Random;
 
 public class WorldAgent extends Agent {
+
+    private int peopleInHouse;
+
     @Override
     protected void setup() {
-
 
         DFAgentDescription dfad = new DFAgentDescription();
         dfad.setName(getAID());
@@ -33,14 +37,13 @@ public class WorldAgent extends Agent {
         }
 
         addBehaviour(new TimeBehaviour(this, 500));
-        addBehaviour(new OfferRequestServer(this));
+        addBehaviour(new OfferRequestServer());
         super.setup();
     }
 
     private LocalTime time = new LocalTime(0, 0);
 
-    class TimeBehaviour extends TickerBehaviour{
-
+    class TimeBehaviour extends TickerBehaviour {
 
         private WorldAgent worldAgent;
 
@@ -58,17 +61,10 @@ public class WorldAgent extends Agent {
 
     class OfferRequestServer extends CyclicBehaviour{
 
-        private WorldAgent agent;
-
-        OfferRequestServer(WorldAgent worldAgent) {
-
-            this.agent = worldAgent;
-        }
-
         @Override
         public void action() {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-            ACLMessage msg = agent.receive(mt);
+            ACLMessage msg = myAgent.receive(mt);
             if(msg != null){
                 String title = msg.getContent();
 
@@ -84,8 +80,13 @@ public class WorldAgent extends Agent {
                         System.out.println("Mam v pici temp.");
                         reply.setContent(time.minuteOfHour().getAsText());
                         break;
+                    case "rain":
+                        System.out.println("Mam v pici rain.");
+                        float number = (float) (0.0 + (100.0) * (new Random().nextFloat()));
+                        reply.setContent(String.format("%.2f", number));   // random float between 0.0 and 100.0
+                        break;
                 }
-                agent.send(reply);
+                myAgent.send(reply);
             }
             else
             {
