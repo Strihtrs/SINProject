@@ -12,5 +12,6 @@
     <orderEntry type="library" name="commons-codec" level="project" />
     <orderEntry type="library" name="com.mashape.unirest:unirest-java:1.4.9" level="project" />
     <orderEntry type="library" name="joda-time:joda-time:2.9.9" level="project" />
+    <orderEntry type="library" name="org.ajbrown:name-machine:1.0.0" level="project" />
   </component>
 </module>

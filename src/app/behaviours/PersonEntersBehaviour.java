@@ -10,7 +10,7 @@ public class PersonEntersBehaviour extends OneShotBehaviour {
 
         PersonAgent person = (PersonAgent) myAgent;
 
-        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         msg.addReceiver(person.worldAgentAID);
         msg.setContent("IN");
         person.send(msg);

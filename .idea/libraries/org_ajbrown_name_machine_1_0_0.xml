@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.ajbrown:name-machine:1.0.0" type="repository">
+    <properties maven-id="org.ajbrown:name-machine:1.0.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/ajbrown/name-machine/1.0.0/name-machine-1.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

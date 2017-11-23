@@ -1,8 +1,12 @@
-package app;
+package app.agents;
 
 
 import jade.core.Agent;
+import jade.core.Profile;
+import jade.core.ProfileImpl;
+import jade.core.Runtime;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -10,15 +14,18 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.wrapper.AgentController;
+import jade.wrapper.StaleProxyException;
+import org.ajbrown.namemachine.NameGenerator;
 import org.joda.time.LocalTime;
 
-import java.text.DecimalFormat;
-import java.util.Objects;
 import java.util.Random;
 
 public class WorldAgent extends Agent {
 
-    private int peopleInHouse;
+    private int peopleInWorld;
+    private jade.wrapper.AgentContainer peopleContainer;
+
 
     @Override
     protected void setup() {
@@ -36,12 +43,48 @@ public class WorldAgent extends Agent {
             e.printStackTrace();
         }
 
+
+        //peoplecontainer
+        Profile pee = new ProfileImpl();
+        pee.setParameter(Profile.CONTAINER_NAME, "Pee container");
+        peopleContainer = Runtime.instance().createAgentContainer(pee);
+
+        addBehaviour(new InitBehaviour());
         addBehaviour(new TimeBehaviour(this, 500));
         addBehaviour(new OfferRequestServer());
+        addBehaviour(new PersonSpawnBehaviour(this, 1000));
+
         super.setup();
     }
 
     private LocalTime time = new LocalTime(0, 0);
+
+    class InitBehaviour extends OneShotBehaviour {
+
+        @Override
+        public void action() {
+            Profile profile = new ProfileImpl();
+            profile.setParameter(Profile.CONTAINER_NAME, "Rooms");
+
+            jade.wrapper.AgentContainer roomContainer = Runtime.instance().createAgentContainer(profile);
+
+
+            try {
+                AgentController livingRoom =
+                        roomContainer
+                                .createNewAgent("living-room", RoomAgent.class.getCanonicalName(), null);
+                livingRoom.start();
+
+                roomContainer
+                        .createNewAgent("bed-room", RoomAgent.class.getCanonicalName(), null)
+                        .start();
+
+            } catch (StaleProxyException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
     class TimeBehaviour extends TickerBehaviour {
 
@@ -59,13 +102,13 @@ public class WorldAgent extends Agent {
         }
     }
 
-    class OfferRequestServer extends CyclicBehaviour{
+    class OfferRequestServer extends CyclicBehaviour {
 
         @Override
         public void action() {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
             ACLMessage msg = myAgent.receive(mt);
-            if(msg != null){
+            if (msg != null) {
                 String title = msg.getContent();
 
                 ACLMessage reply = msg.createReply();
@@ -85,12 +128,33 @@ public class WorldAgent extends Agent {
                         float number = (float) (0.0 + (100.0) * (new Random().nextFloat()));
                         reply.setContent(String.format("%.2f", number));   // random float between 0.0 and 100.0
                         break;
+
+
                 }
                 myAgent.send(reply);
-            }
-            else
-            {
+            } else {
                 block();
+            }
+        }
+    }
+
+    class PersonSpawnBehaviour extends TickerBehaviour {
+
+        public PersonSpawnBehaviour(Agent a, long period) {
+            super(a, period);
+        }
+
+        @Override
+        protected void onTick() {
+            if (peopleInWorld <= 10 && new Random().nextFloat() > 0.5) {
+                try {
+                    peopleContainer
+                            .createNewAgent(new NameGenerator().generateName().getFirstName(), PersonAgent.class.getCanonicalName(), null)
+                            .start();
+                    peopleInWorld++;
+                } catch (StaleProxyException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
