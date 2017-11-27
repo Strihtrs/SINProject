@@ -2,6 +2,7 @@ package app.agents;
 
 
 import app.Helper;
+import app.RoomEnum;
 import jade.core.Agent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -55,7 +56,7 @@ public class WorldAgent extends Agent {
 
             try {
                 for (RoomEnum e : RoomEnum.values()) {
-                    Agent a = new RoomAgent();
+                    Agent a = new RoomAgent(e);
                     roomContainer.acceptNewAgent(e.toString(), a)
                             .start();
                     Helper.registerInDFService(a, e.toString());

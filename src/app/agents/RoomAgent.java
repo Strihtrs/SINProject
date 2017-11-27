@@ -1,5 +1,6 @@
 package app.agents;
 
+import app.RoomEnum;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -12,18 +13,22 @@ import java.util.Set;
 
 public class RoomAgent extends Agent {
 
+    private final RoomEnum roomEnum;
     private Set<AID> sensorList;
     private Set<AID> roomList;
     private int peopleCount;
 
-    private boolean isLocked;
-
-    public RoomAgent() {
-        sensorList = new HashSet<>();
-        roomList = new HashSet<>();
+    private boolean isLocked() {
+        return peopleCount >= roomEnum.getPeopleCapacity();
     }
 
-    public Set<AID> GetNextRooms() {
+    public RoomAgent(RoomEnum roomEnum) {
+        sensorList = new HashSet<>();
+        roomList = new HashSet<>();
+        this.roomEnum = roomEnum;
+    }
+
+    public Set<AID> getNextRooms() {
         return roomList;
     }
 
@@ -47,7 +52,7 @@ public class RoomAgent extends Agent {
 
                 ACLMessage reply = msg.createReply();
 
-                if (!isLocked) {
+                if (!isLocked()) {
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     System.out.println(myAgent.getLocalName() + " prijal " + msg.getSender().getLocalName());
                     peopleCount++;
