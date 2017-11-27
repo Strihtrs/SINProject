@@ -18,8 +18,15 @@ public class RoomAgent extends Agent {
     private Set<AID> roomList;
     private int peopleCount;
 
-    private boolean isInaccessible() {
-        return peopleCount >= roomEnum.getPeopleCapacity();
+    private boolean isInaccessible(String currentRoom) {
+        boolean isAccessible = false;
+        for(AID r : roomList) {
+            if(r.getLocalName().equals(currentRoom)) {
+                isAccessible = true;
+                break;
+            }
+        }
+        return peopleCount >= roomEnum.getPeopleCapacity() || !isAccessible;
     }
 
     public RoomEnum getRoomEnum() {
@@ -55,12 +62,13 @@ public class RoomAgent extends Agent {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.PROPOSE);
             ACLMessage msg = myAgent.receive(mt);
 
-            if (msg != null && Objects.equals(msg.getContent(), "enter")) {
+            if (msg != null && msg.getContent().contains("enter")) {
 
-
+                String msgContent = msg.getContent();
                 ACLMessage reply = msg.createReply();
+                String currentRoom = msgContent.substring(msgContent.indexOf("_") + 1);
 
-                if (!isInaccessible()) {
+                if (currentRoom.equals("world") || !isInaccessible(currentRoom)) {
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     System.out.println(myAgent.getLocalName() + " prijal " + msg.getSender().getLocalName());
                     peopleCount++;

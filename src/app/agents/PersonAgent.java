@@ -35,15 +35,14 @@ public class PersonAgent extends BaseSensorAgent {
             MessageTemplate mt = MessageTemplate.MatchSender(nextRoom);
             ACLMessage msg = myAgent.receive(mt);
 
-            if(msg != null) {
-                //System.out.println("dostavam objednavku");
+            if (msg != null) {
 
                 int type = msg.getPerformative();
-                if(type == ACLMessage.ACCEPT_PROPOSAL) {
+                if (type == ACLMessage.ACCEPT_PROPOSAL) {
 
                     currentRoom = nextRoom;
 
-                } else if(type == ACLMessage.REJECT_PROPOSAL) {
+                } else if (type == ACLMessage.REJECT_PROPOSAL) {
                     nextRoom = null;
                 }
 
@@ -69,15 +68,21 @@ public class PersonAgent extends BaseSensorAgent {
         @Override
         public void action() {
 
-            //System.out.println("Tvorim");
             PersonAgent person = (PersonAgent) myAgent;
-            AID lobbyRoom = Helper.findAgentByName(person, targetRoom);
+            AID targetRoom = Helper.findAgentByName(person, this.targetRoom);
 
-            person.nextRoom = lobbyRoom;
+            person.nextRoom = targetRoom;
 
             ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-            msg.addReceiver(lobbyRoom);
-            msg.setContent("enter");
+            msg.addReceiver(targetRoom);
+
+            if (currentRoom == null) {
+                if (targetRoom.getLocalName().equals(RoomEnum.LOBBY.toString())) {
+                    msg.setContent("enter_world");
+                }
+            } else {
+                msg.setContent("enter_" + currentRoom.getLocalName());
+            }
             person.send(msg);
         }
     }
@@ -90,8 +95,14 @@ public class PersonAgent extends BaseSensorAgent {
         @Override
         protected void onTick() {
             if (new Random().nextFloat() > 0.5) {
-                int pick = new Random().nextInt(RoomEnum.values().length);
-                myAgent.addBehaviour(new RoomChangeBehaviour(RoomEnum.values()[pick].toString()));
+                String target;
+                int pick;
+                do {
+                    pick = new Random().nextInt(RoomEnum.values().length);
+                    target = RoomEnum.values()[pick].toString();
+                } while (target.equals(currentRoom.getLocalName()));
+
+                myAgent.addBehaviour(new RoomChangeBehaviour(target));
                 System.out.println(myAgent.getLocalName() + " chce do " + RoomEnum.values()[pick].toString());
             }
 

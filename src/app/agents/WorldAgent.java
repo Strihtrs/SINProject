@@ -157,7 +157,7 @@ public class WorldAgent extends Agent {
 
         @Override
         protected void onTick() {
-            if (peopleInWorld <= 10 && new Random().nextFloat() > 0.5) {
+            if (peopleInWorld < 2 && new Random().nextFloat() > 0.5) {
                 try {
                     peopleContainer
                             .createNewAgent(new NameGenerator().generateName().getFirstName() + time.millisOfDay().getAsText(), PersonAgent.class.getCanonicalName(), null)
