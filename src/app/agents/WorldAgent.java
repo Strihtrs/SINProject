@@ -3,9 +3,7 @@ package app.agents;
 
 import app.Helper;
 import app.RoomEnum;
-import jade.core.Agent;
-import jade.core.Profile;
-import jade.core.ProfileImpl;
+import jade.core.*;
 import jade.core.Runtime;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -17,7 +15,7 @@ import jade.wrapper.StaleProxyException;
 import org.ajbrown.namemachine.NameGenerator;
 import org.joda.time.LocalTime;
 
-import java.util.Random;
+import java.util.*;
 
 public class WorldAgent extends Agent {
 
@@ -47,6 +45,8 @@ public class WorldAgent extends Agent {
 
     class InitBehaviour extends OneShotBehaviour {
 
+        private Map<RoomEnum, RoomAgent> roomMap = new HashMap<>();
+
         @Override
         public void action() {
             Profile profile = new ProfileImpl();
@@ -56,13 +56,45 @@ public class WorldAgent extends Agent {
 
             try {
                 for (RoomEnum e : RoomEnum.values()) {
-                    Agent a = new RoomAgent(e);
+                    RoomAgent a = new RoomAgent(e);
                     roomContainer.acceptNewAgent(e.toString(), a)
                             .start();
                     Helper.registerInDFService(a, e.toString());
+                    roomMap.put(e, a);
                 }
+                defineRooms(roomMap);
             } catch (StaleProxyException e) {
                 e.printStackTrace();
+            }
+        }
+
+        private void defineRooms(Map<RoomEnum, RoomAgent> roomMap) {
+            Set<AID> aids;
+            for (Map.Entry<RoomEnum, RoomAgent> room : roomMap.entrySet()) {
+                switch (room.getKey()) {
+                    case LOBBY:
+                        aids = new HashSet<>();
+                        aids.add(roomMap.get(RoomEnum.TOILET).getAID());
+                        aids.add(roomMap.get(RoomEnum.LIVING).getAID());
+                        room.getValue().setRoomList(aids);
+                        break;
+                    case BED:
+                        aids = new HashSet<>();
+                        aids.add(roomMap.get(RoomEnum.LIVING).getAID());
+                        room.getValue().setRoomList(aids);
+                        break;
+                    case LIVING:
+                        aids = new HashSet<>();
+                        aids.add(roomMap.get(RoomEnum.BED).getAID());
+                        aids.add(roomMap.get(RoomEnum.LOBBY).getAID());
+                        room.getValue().setRoomList(aids);
+                        break;
+                    case TOILET:
+                        aids = new HashSet<>();
+                        aids.add(roomMap.get(RoomEnum.LOBBY).getAID());
+                        room.getValue().setRoomList(aids);
+                        break;
+                }
             }
         }
     }

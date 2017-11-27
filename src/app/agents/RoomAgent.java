@@ -18,8 +18,12 @@ public class RoomAgent extends Agent {
     private Set<AID> roomList;
     private int peopleCount;
 
-    private boolean isLocked() {
+    private boolean isInaccessible() {
         return peopleCount >= roomEnum.getPeopleCapacity();
+    }
+
+    public RoomEnum getRoomEnum() {
+        return roomEnum;
     }
 
     public RoomAgent(RoomEnum roomEnum) {
@@ -39,6 +43,10 @@ public class RoomAgent extends Agent {
         addBehaviour(new PersonEntersRoomBehaviour());
     }
 
+    public void setRoomList(Set<AID> roomList) {
+        this.roomList = roomList;
+    }
+
     class PersonEntersRoomBehaviour extends CyclicBehaviour {
 
         @Override
@@ -52,7 +60,7 @@ public class RoomAgent extends Agent {
 
                 ACLMessage reply = msg.createReply();
 
-                if (!isLocked()) {
+                if (!isInaccessible()) {
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     System.out.println(myAgent.getLocalName() + " prijal " + msg.getSender().getLocalName());
                     peopleCount++;
