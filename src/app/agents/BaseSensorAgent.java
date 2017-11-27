@@ -10,9 +10,14 @@ import java.util.UUID;
 public class BaseSensorAgent extends Agent {
 
     public AID worldAgentAID;
+    public AID roomAID;
     protected UUID conversationId;
 
-    BaseSensorAgent() {
+    public String msgContent;
+    private int IDX;
+
+    BaseSensorAgent(String msgContent) {
+        this.msgContent = msgContent;
         this.conversationId = UUID.randomUUID();
     }
 
@@ -21,6 +26,18 @@ public class BaseSensorAgent extends Agent {
 
         addBehaviour(new FindWorldBehaviour());
         super.setup();
+    }
+
+    public void setRoomAID(AID roomAID) {
+        this.roomAID = roomAID;
+    }
+
+    public int getIDX() {
+        return IDX;
+    }
+
+    public void setIDX(int IDX) {
+        this.IDX = IDX;
     }
 
     private class FindWorldBehaviour extends Behaviour {

@@ -15,13 +15,9 @@ public class SensorBehaviour<T extends BaseSensorAgent> extends TickerBehaviour 
     private MessageTemplate mt;
     private UUID conversationId;
     private boolean requestSent = false;
-    private String msgContent;
-    private int sensorId;
 
-    public SensorBehaviour(T a, long period, String content, int sensorId, UUID conversationId) {
+    public SensorBehaviour(T a, long period, UUID conversationId) {
         super(a, period);
-        this.msgContent = content;
-        this.sensorId = sensorId;
         this.conversationId = conversationId;
         this.agent = a;
     }
@@ -29,11 +25,11 @@ public class SensorBehaviour<T extends BaseSensorAgent> extends TickerBehaviour 
     @Override
     protected void onTick() {
 
-        if (agent.worldAgentAID != null) {
+        if (agent.roomAID != null) {
             if (!this.requestSent) {
                 ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-                msg.addReceiver(agent.worldAgentAID);
-                msg.setContent(msgContent);
+                msg.addReceiver(agent.roomAID);
+                msg.setContent(agent.msgContent);
                 msg.setConversationId(String.valueOf(conversationId));
                 msg.setReplyWith("msg" + System.currentTimeMillis());
                 agent.send(msg);
@@ -45,7 +41,8 @@ public class SensorBehaviour<T extends BaseSensorAgent> extends TickerBehaviour 
                 if (reply != null && reply.getPerformative() == ACLMessage.INFORM) {
                     String content = reply.getContent();
                     try {
-                        Unirest.get("http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=" + sensorId + "&svalue=" + content).asJson();
+                        Unirest.get("http://127.0.0.1:8080/json.htm?type=command&param=switchlight&idx=" + agent.getIDX() + "&switchcmd=" + content).asJson();
+                        System.out.println(content);
                     } catch (UnirestException e) {
                         e.printStackTrace();
                     }
@@ -56,7 +53,7 @@ public class SensorBehaviour<T extends BaseSensorAgent> extends TickerBehaviour 
                 }
             }
         } else {
-            System.out.println("Nemám světového agenta.");
+            System.out.println("Nemám pokojského agenta.");
         }
     }
 }

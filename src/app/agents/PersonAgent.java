@@ -12,10 +12,14 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.Random;
 
-public class PersonAgent extends BaseSensorAgent {
+public class PersonAgent extends Agent {
 
     private AID currentRoom;
     private AID nextRoom;
+
+    public PersonAgent() {
+        super();
+    }
 
     @Override
     protected void setup() {
@@ -23,7 +27,7 @@ public class PersonAgent extends BaseSensorAgent {
 
         // inform World that person is coming IN
         addBehaviour(new RoomChangeBehaviour(RoomEnum.LOBBY.toString()));
-        addBehaviour(new RandomChoiceBehaviour(this, 1000));
+        addBehaviour(new RandomChoiceBehaviour(this, 5000));
         addBehaviour(new HandleRoomResponseBehaviour());
     }
 

@@ -1,6 +1,7 @@
 package app.agents;
 
 import app.RoomEnum;
+import app.SensorEnum;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -8,13 +9,11 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 public class RoomAgent extends Agent {
 
     private final RoomEnum roomEnum;
-    private Set<AID> sensorList;
     private Set<AID> roomList;
     private int peopleCount;
 
@@ -34,7 +33,6 @@ public class RoomAgent extends Agent {
     }
 
     public RoomAgent(RoomEnum roomEnum) {
-        sensorList = new HashSet<>();
         roomList = new HashSet<>();
         this.roomEnum = roomEnum;
     }
@@ -48,6 +46,7 @@ public class RoomAgent extends Agent {
         super.setup();
 
         addBehaviour(new PersonEntersRoomBehaviour());
+        addBehaviour(new OfferSensorServer());
     }
 
     public void setRoomList(Set<AID> roomList) {
@@ -78,6 +77,43 @@ public class RoomAgent extends Agent {
                 }
 
                 myAgent.send(reply);
+            } else {
+                block();
+            }
+        }
+    }
+
+    class OfferSensorServer extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                String title = msg.getContent();
+
+                ACLMessage reply = msg.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+
+                for (SensorEnum e : SensorEnum.values()) {
+                    if (e.toString().equals(title)) {
+                        switch (e) {
+                            case LUX:
+                                //System.out.println("Mam v pici lux.");
+                                break;
+                            case TEMPERATURE:
+                                //System.out.println("Mam v pici temp.");
+                                break;
+                            case RAIN:
+                                //System.out.println("Mam v pici rain.");
+                                break;
+                            case MOTION:
+                                reply.setContent((((RoomAgent) myAgent).peopleCount > 0) ? "On" : "Off");
+                                myAgent.send(reply);
+                                break;
+                        }
+                    }
+                }
             } else {
                 block();
             }

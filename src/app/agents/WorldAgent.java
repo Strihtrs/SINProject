@@ -17,10 +17,18 @@ import org.joda.time.LocalTime;
 
 import java.util.*;
 
-public class WorldAgent extends Agent {
+public class WorldAgent extends RoomAgent {
 
     private int peopleInWorld;
     private AgentContainer peopleContainer;
+
+    public WorldAgent(RoomEnum roomEnum) {
+        super(roomEnum);
+    }
+
+    public WorldAgent() {
+        super(null);
+    }
 
 
     @Override
@@ -35,7 +43,7 @@ public class WorldAgent extends Agent {
 
         addBehaviour(new InitBehaviour());
         addBehaviour(new TimeBehaviour(this, 500));
-        addBehaviour(new OfferRequestServer());
+        //addBehaviour(new OfferRequestServer());
         addBehaviour(new PersonSpawnBehaviour(this, 1000));
 
         super.setup();
@@ -52,7 +60,7 @@ public class WorldAgent extends Agent {
             Profile profile = new ProfileImpl();
             profile.setParameter(Profile.CONTAINER_NAME, "Rooms");
 
-            jade.wrapper.AgentContainer roomContainer = Runtime.instance().createAgentContainer(profile);
+            AgentContainer roomContainer = Runtime.instance().createAgentContainer(profile);
 
             try {
                 for (RoomEnum e : RoomEnum.values()) {
@@ -68,33 +76,66 @@ public class WorldAgent extends Agent {
             }
         }
 
+        private <T extends BaseSensorAgent> void createSensor(Class<T> clazz, AgentContainer container, String name, AID roomAid, int IDX) {
+
+            T sensorAgent;
+            try {
+                sensorAgent = clazz.newInstance();
+                sensorAgent.setRoomAID(roomAid);
+                sensorAgent.setIDX(IDX);
+                container.acceptNewAgent(name, sensorAgent)
+                        .start();
+                Helper.registerInDFService(sensorAgent, sensorAgent.toString());
+
+            } catch (InstantiationException | IllegalAccessException | StaleProxyException e) {
+                e.printStackTrace();
+            }
+        }
+
         private void defineRooms(Map<RoomEnum, RoomAgent> roomMap) {
             Set<AID> aids;
+
+            Profile profile = new ProfileImpl();
+            profile.setParameter(Profile.CONTAINER_NAME, "Sensors");
+            AgentContainer sensorsContainer = Runtime.instance().createAgentContainer(profile);
+
             for (Map.Entry<RoomEnum, RoomAgent> room : roomMap.entrySet()) {
+                aids = new HashSet<>();
+                AID roomAID = room.getValue().getAID();
+
                 switch (room.getKey()) {
                     case LOBBY:
-                        aids = new HashSet<>();
                         aids.add(roomMap.get(RoomEnum.TOILET).getAID());
                         aids.add(roomMap.get(RoomEnum.LIVING).getAID());
-                        room.getValue().setRoomList(aids);
+
+                        createSensor(MotionSensor.class, sensorsContainer, "MotionLobby", roomAID, 13);
+                        createSensor(TempSensorAgent.class, sensorsContainer, "TempLobby", roomAID, 4);
+
                         break;
                     case BED:
-                        aids = new HashSet<>();
                         aids.add(roomMap.get(RoomEnum.LIVING).getAID());
-                        room.getValue().setRoomList(aids);
+
+                        createSensor(MotionSensor.class, sensorsContainer, "MotionBed", roomAID, 10);
+                        createSensor(TempSensorAgent.class, sensorsContainer, "TempBed", roomAID, 7);
+
                         break;
                     case LIVING:
-                        aids = new HashSet<>();
                         aids.add(roomMap.get(RoomEnum.BED).getAID());
                         aids.add(roomMap.get(RoomEnum.LOBBY).getAID());
-                        room.getValue().setRoomList(aids);
+
+                        createSensor(MotionSensor.class, sensorsContainer, "MotionLiving", roomAID, 11);
+                        createSensor(TempSensorAgent.class, sensorsContainer, "TempLiving", roomAID, 5);
+
                         break;
                     case TOILET:
-                        aids = new HashSet<>();
                         aids.add(roomMap.get(RoomEnum.LOBBY).getAID());
-                        room.getValue().setRoomList(aids);
+
+                        createSensor(MotionSensor.class, sensorsContainer, "MotionToilet", roomAID, 12);
+                        createSensor(TempSensorAgent.class, sensorsContainer, "TempToilet", roomAID, 6);
                         break;
                 }
+
+                room.getValue().setRoomList(aids);
             }
         }
     }
@@ -140,6 +181,8 @@ public class WorldAgent extends Agent {
                         //System.out.println("Mam v pici rain.");
                         float number = (float) (0.0 + (100.0) * (new Random().nextFloat()));
                         reply.setContent(String.format("%.2f", number));   // random float between 0.0 and 100.0
+                        break;
+                    case "motion":
                         break;
                 }
                 myAgent.send(reply);
