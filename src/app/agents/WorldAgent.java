@@ -9,11 +9,9 @@ import jade.core.Runtime;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.domain.DFService;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentContainer;
-import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 import org.ajbrown.namemachine.NameGenerator;
 import org.joda.time.LocalTime;
@@ -39,7 +37,7 @@ public class WorldAgent extends Agent {
         addBehaviour(new InitBehaviour());
         addBehaviour(new TimeBehaviour(this, 500));
         addBehaviour(new OfferRequestServer());
-        addBehaviour(new PersonSpawnBehaviour(this, 3000));
+        addBehaviour(new PersonSpawnBehaviour(this, 1000));
 
         super.setup();
     }
@@ -55,23 +53,13 @@ public class WorldAgent extends Agent {
 
             jade.wrapper.AgentContainer roomContainer = Runtime.instance().createAgentContainer(profile);
 
-
             try {
-                Agent a = new RoomAgent();
-                roomContainer.acceptNewAgent("lobby-room", a)
-                             .start();
-                Helper.registerInDFService(a, "lobby-room");
-
-                a = new RoomAgent();
-                roomContainer.acceptNewAgent("living-room", a)
-                             .start();
-                Helper.registerInDFService(a, "living-room");
-
-                a = new RoomAgent();
-                roomContainer.acceptNewAgent("bed-room", a)
-                             .start();
-                Helper.registerInDFService(a, "bed-room");
-
+                for (RoomEnum e : RoomEnum.values()) {
+                    Agent a = new RoomAgent();
+                    roomContainer.acceptNewAgent(e.toString(), a)
+                            .start();
+                    Helper.registerInDFService(a, e.toString());
+                }
             } catch (StaleProxyException e) {
                 e.printStackTrace();
             }
@@ -120,8 +108,6 @@ public class WorldAgent extends Agent {
                         float number = (float) (0.0 + (100.0) * (new Random().nextFloat()));
                         reply.setContent(String.format("%.2f", number));   // random float between 0.0 and 100.0
                         break;
-
-
                 }
                 myAgent.send(reply);
             } else {
@@ -141,7 +127,7 @@ public class WorldAgent extends Agent {
             if (peopleInWorld <= 10 && new Random().nextFloat() > 0.5) {
                 try {
                     peopleContainer
-                            .createNewAgent(new NameGenerator().generateName().getFirstName(), PersonAgent.class.getCanonicalName(), null)
+                            .createNewAgent(new NameGenerator().generateName().getFirstName() + time.millisOfDay().getAsText(), PersonAgent.class.getCanonicalName(), null)
                             .start();
                     peopleInWorld++;
                 } catch (StaleProxyException e) {
