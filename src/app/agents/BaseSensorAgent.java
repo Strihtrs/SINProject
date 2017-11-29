@@ -67,6 +67,21 @@ public class BaseSensorAgent extends Agent {
         return true;
     }
 
+    protected String getUrl(SensorEnum type, String value, int idx) {
+        String url = "http://127.0.0.1:8080/json.htm?type=command&";
+        switch (type) {
+            case LUX:
+                return url + "param=udevice&idx=" + idx + "&svalue=" + value;
+            case RAIN:
+            case TEMPERATURE:
+                return url + "param=udevice&idx=" + idx + "&nvalue=0&svalue=" + value;
+            case MOTION:
+                return url + "param=switchlight&idx=" + idx + "&switchcmd=" + value;
+            default:
+                return null;
+        }
+    }
+
     class SensorBehaviour<T extends BaseSensorAgent> extends TickerBehaviour {
 
         private T agent;
@@ -107,7 +122,7 @@ public class BaseSensorAgent extends Agent {
                         if (shouldSend(content)) {
                             try {
                                 Unirest.get(getUrl(sensorType, content, agent.getIDX())).asJson();
-                                System.out.println(content + " " + reply.getSender().getLocalName() + " " + conversationId);
+                                //System.out.println(content + " " + reply.getSender().getLocalName());
                             } catch (UnirestException e) {
                                 e.printStackTrace();
                             }
@@ -122,19 +137,6 @@ public class BaseSensorAgent extends Agent {
             }
         }
 
-        private String getUrl(SensorEnum type, String value, int idx) {
-            String url = "http://127.0.0.1:8080/json.htm?type=command&";
-            switch (type) {
-                case LUX:
-                    return url + "param=udevice&idx=" + idx + "&svalue=" + value;
-                case RAIN:
-                case TEMPERATURE:
-                    return url + "param=udevice&idx=" + idx + "&nvalue=0&svalue=" + value;
-                case MOTION:
-                    return url + "param=switchlight&idx=" + idx + "&switchcmd=" + value;
-                default:
-                    return null;
-            }
-        }
+
     }
 }

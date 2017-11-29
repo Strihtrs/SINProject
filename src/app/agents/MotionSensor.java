@@ -1,6 +1,9 @@
 package app.agents;
 
 import app.SensorEnum;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import jade.core.behaviours.OneShotBehaviour;
 
 public class MotionSensor extends BaseSensorAgent {
 
@@ -14,6 +17,7 @@ public class MotionSensor extends BaseSensorAgent {
     protected void setup() {
         super.setup();
 
+        addBehaviour(new StartupBehaviour());
         addBehaviour(new SensorBehaviour<>(this, 500, conversationId, SensorEnum.MOTION));
     }
 
@@ -28,5 +32,18 @@ public class MotionSensor extends BaseSensorAgent {
             return true;
         }
         return false;
+    }
+
+    class StartupBehaviour extends OneShotBehaviour {
+
+        @Override
+        public void action() {
+            BaseSensorAgent agent = (BaseSensorAgent) myAgent;
+            try {
+                Unirest.get(getUrl(SensorEnum.MOTION, "Off", agent.getIDX())).asJson();
+            } catch (UnirestException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

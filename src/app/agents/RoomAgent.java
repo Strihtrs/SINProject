@@ -5,8 +5,10 @@ import app.SensorEnum;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import org.joda.time.LocalTime;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,11 +18,12 @@ public class RoomAgent extends Agent {
     private final RoomEnum roomEnum;
     private Set<AID> roomList;
     private int peopleCount;
+    private float temperature = 10;
 
     private boolean isInaccessible(String currentRoom) {
         boolean isAccessible = false;
-        for(AID r : roomList) {
-            if(r.getLocalName().equals(currentRoom)) {
+        for (AID r : roomList) {
+            if (r.getLocalName().equals(currentRoom)) {
                 isAccessible = true;
                 break;
             }
@@ -48,10 +51,19 @@ public class RoomAgent extends Agent {
         addBehaviour(new PersonEntersRoomBehaviour());
         addBehaviour(new OfferSensorServer());
         addBehaviour(new PersonLeavesRoomBehaviour());
+        addBehaviour(new TemperatureBehaviour(this, 800));
     }
 
     public void setRoomList(Set<AID> roomList) {
         this.roomList = roomList;
+    }
+
+    public float getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(float temperature) {
+        this.temperature = temperature;
     }
 
     class PersonLeavesRoomBehaviour extends CyclicBehaviour {
@@ -90,7 +102,7 @@ public class RoomAgent extends Agent {
                     peopleCount++;
                 } else {
                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-                    System.out.println(myAgent.getName() + " zamitnul " + msg.getSender().getName());
+                    System.out.println(myAgent.getLocalName() + " zamitnul " + msg.getSender().getLocalName());
                 }
 
                 myAgent.send(reply);
@@ -100,7 +112,32 @@ public class RoomAgent extends Agent {
         }
     }
 
+    class TemperatureBehaviour extends TickerBehaviour {
+
+        TemperatureBehaviour(Agent a, long period) {
+            super(a, period);
+        }
+
+        @Override
+        protected void onTick() {
+
+            if (temperature < WorldAgent.worldTemp) {
+                temperature += .5;
+            } else if (temperature >= WorldAgent.worldTemp) {
+                temperature -= .5;
+            }
+        }
+    }
+
     class OfferSensorServer extends CyclicBehaviour {
+
+        private static final float sinStep = (float) (Math.PI * 2. / (24. * 60.));
+
+        private int getMinutesOfDay() {
+            WorldAgent world = (WorldAgent) myAgent;
+            LocalTime time = world.getTime();
+            return time.hourOfDay().get() * 60 + time.minuteOfHour().get();
+        }
 
         @Override
         public void action() {
@@ -114,15 +151,28 @@ public class RoomAgent extends Agent {
 
                 for (SensorEnum e : SensorEnum.values()) {
                     if (e.toString().equals(title)) {
+
                         switch (e) {
                             case LUX:
-                                //System.out.println("Mam v pici lux.");
+                                int lux = (int) (Math.sin(sinStep * getMinutesOfDay() - (sinStep * 6 * 60)) * 5000) + 5000;
+
+                                reply.setContent(lux + "");
+                                myAgent.send(reply);
                                 break;
                             case TEMPERATURE:
-                                //System.out.println("Mam v pici temp.");
+                                if (myAgent.getLocalName().equals("World")) {
+
+                                    ((WorldAgent) myAgent).setTemperature((float) (Math.sin(sinStep * getMinutesOfDay() - (sinStep * 6 * 60)) * 10) + 20);
+                                    WorldAgent.worldTemp = ((WorldAgent) myAgent).getTemperature();
+
+                                    reply.setContent(temperature + "");
+                                } else {
+                                    reply.setContent(((RoomAgent) myAgent).getTemperature() + "");
+                                }
+                                myAgent.send(reply);
                                 break;
                             case RAIN:
-                                //System.out.println("Mam v pici rain.");
+
                                 break;
                             case MOTION:
                                 reply.setContent((((RoomAgent) myAgent).peopleCount > 0) ? "On" : "Off");

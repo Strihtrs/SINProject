@@ -5,11 +5,8 @@ import app.Helper;
 import app.RoomEnum;
 import jade.core.*;
 import jade.core.Runtime;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.StaleProxyException;
 import org.ajbrown.namemachine.NameGenerator;
@@ -20,6 +17,8 @@ import java.util.*;
 public class WorldAgent extends RoomAgent {
 
     private int peopleInWorld;
+
+    public static float worldTemp;
     private AgentContainer peopleContainer;
 
     public WorldAgent(RoomEnum roomEnum) {
@@ -50,6 +49,10 @@ public class WorldAgent extends RoomAgent {
     }
 
     private LocalTime time = new LocalTime(0, 0);
+
+    public LocalTime getTime() {
+        return time;
+    }
 
     class InitBehaviour extends OneShotBehaviour {
 
@@ -137,6 +140,9 @@ public class WorldAgent extends RoomAgent {
 
                 room.getValue().setRoomList(aids);
             }
+
+            createSensor(LuxSensorAgent.class, sensorsContainer, "LuxW", myAgent.getAID(), 1);
+            createSensor(TempSensorAgent.class, sensorsContainer, "TempW", myAgent.getAID(), 3);
         }
     }
 
@@ -153,42 +159,6 @@ public class WorldAgent extends RoomAgent {
         @Override
         public void onTick() {
             worldAgent.time = time.plusMinutes(28);
-        }
-    }
-
-    class OfferRequestServer extends CyclicBehaviour {
-
-        @Override
-        public void action() {
-            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-            ACLMessage msg = myAgent.receive(mt);
-            if (msg != null) {
-                String title = msg.getContent();
-
-                ACLMessage reply = msg.createReply();
-                reply.setPerformative(ACLMessage.INFORM);
-
-                switch (title) {
-                    case "lux":
-                        //System.out.println("Mam v pici lux.");
-                        reply.setContent(time.hourOfDay().getAsText());
-                        break;
-                    case "temp":
-                        //System.out.println("Mam v pici temp.");
-                        reply.setContent(time.minuteOfHour().getAsText());
-                        break;
-                    case "rain":
-                        //System.out.println("Mam v pici rain.");
-                        float number = (float) (0.0 + (100.0) * (new Random().nextFloat()));
-                        reply.setContent(String.format("%.2f", number));   // random float between 0.0 and 100.0
-                        break;
-                    case "motion":
-                        break;
-                }
-                myAgent.send(reply);
-            } else {
-                block();
-            }
         }
     }
 
