@@ -1,9 +1,10 @@
 package app.agents;
 
 import app.SensorEnum;
-import app.behaviours.SensorBehaviour;
 
 public class MotionSensor extends BaseSensorAgent {
+
+    private boolean isOn = false;
 
     public MotionSensor() {
         super(SensorEnum.MOTION.toString());
@@ -13,6 +14,19 @@ public class MotionSensor extends BaseSensorAgent {
     protected void setup() {
         super.setup();
 
-        addBehaviour(new SensorBehaviour<>(this, 2000, conversationId));
+        addBehaviour(new SensorBehaviour<>(this, 500, conversationId, SensorEnum.MOTION));
+    }
+
+    @Override
+    protected boolean shouldSend(String content) {
+        if (content.equals("On") && !isOn) {
+            isOn = true;
+            return true;
+        }
+        if (content.equals("Off") && isOn) {
+            isOn = false;
+            return true;
+        }
+        return false;
     }
 }

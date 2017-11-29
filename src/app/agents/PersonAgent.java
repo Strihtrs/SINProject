@@ -44,6 +44,7 @@ public class PersonAgent extends Agent {
                 int type = msg.getPerformative();
                 if (type == ACLMessage.ACCEPT_PROPOSAL) {
 
+                    informCurrentRoom();
                     currentRoom = nextRoom;
 
                 } else if (type == ACLMessage.REJECT_PROPOSAL) {
@@ -53,6 +54,14 @@ public class PersonAgent extends Agent {
             } else {
                 block();
             }
+        }
+
+        private void informCurrentRoom() {
+
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(currentRoom);
+            msg.setContent("leaving");
+            myAgent.send(msg);
         }
 
         @Override

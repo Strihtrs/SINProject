@@ -1,7 +1,6 @@
 package app.agents;
 
 import app.SensorEnum;
-import app.behaviours.SensorBehaviour;
 
 public class LuxSensorAgent extends BaseSensorAgent {
 
@@ -12,6 +11,6 @@ public class LuxSensorAgent extends BaseSensorAgent {
     @Override
     protected void setup() {
         super.setup();
-        addBehaviour(new SensorBehaviour<>(this, 500, conversationId));
+        addBehaviour(new SensorBehaviour<>(this, 500, conversationId, SensorEnum.LUX));
     }
 }

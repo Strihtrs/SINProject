@@ -13,6 +13,21 @@ public enum SensorEnum {
         this.name = s;
     }
 
+    public static SensorEnum getByName(String name) {
+        if (LUX.toString().equals(name)) {
+            return LUX;
+        }
+        if (TEMPERATURE.toString().equals(name)) {
+            return TEMPERATURE;
+        }
+        if (MOTION.toString().equals(name)) {
+            return MOTION;
+        }
+        if (RAIN.toString().equals(name)) {
+            return RAIN;
+        }
+        return null;
+    }
 
     @Override
     public String toString() {

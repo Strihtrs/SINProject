@@ -47,10 +47,27 @@ public class RoomAgent extends Agent {
 
         addBehaviour(new PersonEntersRoomBehaviour());
         addBehaviour(new OfferSensorServer());
+        addBehaviour(new PersonLeavesRoomBehaviour());
     }
 
     public void setRoomList(Set<AID> roomList) {
         this.roomList = roomList;
+    }
+
+    class PersonLeavesRoomBehaviour extends CyclicBehaviour {
+
+        @Override
+        public void action() {
+            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+            ACLMessage msg = myAgent.receive(mt);
+
+            if (msg != null && msg.getContent().contains("leaving")) {
+                peopleCount--;
+                System.out.println(myAgent.getLocalName() + " bye bye " + peopleCount);
+            } else {
+                block();
+            }
+        }
     }
 
     class PersonEntersRoomBehaviour extends CyclicBehaviour {

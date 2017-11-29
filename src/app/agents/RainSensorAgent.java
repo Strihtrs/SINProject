@@ -1,7 +1,6 @@
 package app.agents;
 
 import app.SensorEnum;
-import app.behaviours.SensorBehaviour;
 
 public class RainSensorAgent extends BaseSensorAgent {
 
@@ -12,6 +11,6 @@ public class RainSensorAgent extends BaseSensorAgent {
     @Override
     protected void setup() {
         super.setup();
-        addBehaviour(new SensorBehaviour<>(this, 1000, conversationId));
+        addBehaviour(new SensorBehaviour<>(this, 1000, conversationId, SensorEnum.RAIN));
     }
 }

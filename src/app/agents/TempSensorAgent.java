@@ -1,7 +1,6 @@
 package app.agents;
 
 import app.SensorEnum;
-import app.behaviours.SensorBehaviour;
 
 public class TempSensorAgent extends BaseSensorAgent {
 
@@ -13,6 +12,6 @@ public class TempSensorAgent extends BaseSensorAgent {
     protected void setup() {
 
         super.setup();
-        addBehaviour(new SensorBehaviour<>(this, 700, conversationId));
+        addBehaviour(new SensorBehaviour<>(this, 1000, conversationId, SensorEnum.TEMPERATURE));
     }
 }
