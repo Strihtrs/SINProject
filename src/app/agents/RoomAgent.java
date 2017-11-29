@@ -2,6 +2,10 @@ package app.agents;
 
 import app.RoomEnum;
 import app.SensorEnum;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -18,7 +22,9 @@ public class RoomAgent extends Agent {
     private final RoomEnum roomEnum;
     private Set<AID> roomList;
     private int peopleCount;
+    private boolean isHeatingOn = false;
     private float temperature = 10;
+    private String heatingIDX;
 
     private boolean isInaccessible(String currentRoom) {
         boolean isAccessible = false;
@@ -52,6 +58,7 @@ public class RoomAgent extends Agent {
         addBehaviour(new OfferSensorServer());
         addBehaviour(new PersonLeavesRoomBehaviour());
         addBehaviour(new TemperatureBehaviour(this, 800));
+        addBehaviour(new HeatingBehaviour(this, 800));
     }
 
     public void setRoomList(Set<AID> roomList) {
@@ -125,6 +132,36 @@ public class RoomAgent extends Agent {
                 temperature += .5;
             } else if (temperature >= WorldAgent.worldTemp) {
                 temperature -= .5;
+            }
+        }
+    }
+
+    class HeatingBehaviour extends TickerBehaviour {
+
+        float heatingStep = 2;
+
+        HeatingBehaviour(Agent a, long period) {
+            super(a, period);
+        }
+
+        @Override
+        protected void onTick() {
+            if (isHeatingOn) {
+                temperature += heatingStep;
+            }
+        }
+    }
+
+    class HeatingSwitchBehaviour extends CyclicBehaviour{
+        @Override
+        public void action() {
+
+            String url = "http://localhost:8080/json.htm?type=devices&rid=" + heatingIDX;
+            try {
+                HttpResponse<JsonNode> json = Unirest.get(url).asJson();
+                //if(json.getBody().getObject().getJSONArray("result").get(0))
+            } catch (UnirestException e) {
+                e.printStackTrace();
             }
         }
     }
