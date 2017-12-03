@@ -24,7 +24,7 @@ public class RoomAgent extends Agent {
     private int peopleCount;
     private boolean isHeatingOn = false;
     private float temperature = 10;
-    private String heatingIDX;
+    private int heatingIDX;
 
     private boolean isInaccessible(String currentRoom) {
         boolean isAccessible = false;
@@ -57,8 +57,9 @@ public class RoomAgent extends Agent {
         addBehaviour(new PersonEntersRoomBehaviour());
         addBehaviour(new OfferSensorServer());
         addBehaviour(new PersonLeavesRoomBehaviour());
-        addBehaviour(new TemperatureBehaviour(this, 800));
-        addBehaviour(new HeatingBehaviour(this, 800));
+        addBehaviour(new TemperatureBehaviour(this, 1000));
+        addBehaviour(new HeatingBehaviour(this, 1000));
+        addBehaviour(new HeatingSwitchBehaviour());
     }
 
     public void setRoomList(Set<AID> roomList) {
@@ -71,6 +72,10 @@ public class RoomAgent extends Agent {
 
     public void setTemperature(float temperature) {
         this.temperature = temperature;
+    }
+
+    public void setHeatingIDX(int heatingIDX) {
+        this.heatingIDX = heatingIDX;
     }
 
     class PersonLeavesRoomBehaviour extends CyclicBehaviour {
@@ -138,7 +143,7 @@ public class RoomAgent extends Agent {
 
     class HeatingBehaviour extends TickerBehaviour {
 
-        float heatingStep = 2;
+        float heatingStep = (float) 1.5;
 
         HeatingBehaviour(Agent a, long period) {
             super(a, period);
@@ -156,12 +161,18 @@ public class RoomAgent extends Agent {
         @Override
         public void action() {
 
-            String url = "http://localhost:8080/json.htm?type=devices&rid=" + heatingIDX;
-            try {
-                HttpResponse<JsonNode> json = Unirest.get(url).asJson();
-                //if(json.getBody().getObject().getJSONArray("result").get(0))
-            } catch (UnirestException e) {
-                e.printStackTrace();
+            if (heatingIDX > 0) {
+                String url = "http://localhost:8080/json.htm?type=devices&rid=" + heatingIDX;
+                try {
+                    HttpResponse<JsonNode> json = Unirest.get(url).asJson();
+                    isHeatingOn = (json.getBody()
+                            .getObject()
+                            .getJSONArray("result")
+                            .getJSONObject(0)
+                            .getString("Data")).equals("On");
+                } catch (UnirestException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -199,7 +210,7 @@ public class RoomAgent extends Agent {
                             case TEMPERATURE:
                                 if (myAgent.getLocalName().equals("World")) {
 
-                                    ((WorldAgent) myAgent).setTemperature((float) (Math.sin(sinStep * getMinutesOfDay() - (sinStep * 6 * 60)) * 10) + 20);
+                                    ((WorldAgent) myAgent).setTemperature((float) (Math.sin(sinStep * getMinutesOfDay() - (sinStep * 6 * 60)) * 10) + 15);
                                     WorldAgent.worldTemp = ((WorldAgent) myAgent).getTemperature();
 
                                     reply.setContent(temperature + "");

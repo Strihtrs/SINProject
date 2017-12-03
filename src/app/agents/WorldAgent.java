@@ -41,7 +41,7 @@ public class WorldAgent extends RoomAgent {
         peopleContainer = Runtime.instance().createAgentContainer(pee);
 
         addBehaviour(new InitBehaviour());
-        addBehaviour(new TimeBehaviour(this, 500));
+        addBehaviour(new TimeBehaviour(this, 2000));
         //addBehaviour(new OfferRequestServer());
         addBehaviour(new PersonSpawnBehaviour(this, 1000));
 
@@ -111,12 +111,16 @@ public class WorldAgent extends RoomAgent {
                         aids.add(roomMap.get(RoomEnum.TOILET).getAID());
                         aids.add(roomMap.get(RoomEnum.LIVING).getAID());
 
+                        room.getValue().setHeatingIDX(18);
+
                         createSensor(MotionSensor.class, sensorsContainer, "MotionLobby", roomAID, 13);
                         createSensor(TempSensorAgent.class, sensorsContainer, "TempLobby", roomAID, 4);
 
                         break;
                     case BED:
                         aids.add(roomMap.get(RoomEnum.LIVING).getAID());
+
+                        room.getValue().setHeatingIDX(20);
 
                         createSensor(MotionSensor.class, sensorsContainer, "MotionBed", roomAID, 10);
                         createSensor(TempSensorAgent.class, sensorsContainer, "TempBed", roomAID, 7);
@@ -126,12 +130,16 @@ public class WorldAgent extends RoomAgent {
                         aids.add(roomMap.get(RoomEnum.BED).getAID());
                         aids.add(roomMap.get(RoomEnum.LOBBY).getAID());
 
+                        room.getValue().setHeatingIDX(19);
+
                         createSensor(MotionSensor.class, sensorsContainer, "MotionLiving", roomAID, 11);
                         createSensor(TempSensorAgent.class, sensorsContainer, "TempLiving", roomAID, 5);
 
                         break;
                     case TOILET:
                         aids.add(roomMap.get(RoomEnum.LOBBY).getAID());
+
+                        room.getValue().setHeatingIDX(21);
 
                         createSensor(MotionSensor.class, sensorsContainer, "MotionToilet", roomAID, 12);
                         createSensor(TempSensorAgent.class, sensorsContainer, "TempToilet", roomAID, 6);
