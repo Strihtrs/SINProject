@@ -3,8 +3,7 @@ package app;
 public enum SensorEnum {
     LUX("lux-sensor"),
     TEMPERATURE("temp-sensor"),
-    MOTION("motion-sensor"),
-    RAIN("rain-sensor");
+    MOTION("motion-sensor");
 
 
     private final String name;
@@ -22,9 +21,6 @@ public enum SensorEnum {
         }
         if (MOTION.toString().equals(name)) {
             return MOTION;
-        }
-        if (RAIN.toString().equals(name)) {
-            return RAIN;
         }
         return null;
     }

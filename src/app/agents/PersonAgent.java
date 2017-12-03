@@ -27,7 +27,7 @@ public class PersonAgent extends Agent {
 
         // inform World that person is coming IN
         addBehaviour(new RoomChangeBehaviour(RoomEnum.LOBBY.toString()));
-        addBehaviour(new RandomChoiceBehaviour(this, 5000));
+        addBehaviour(new RandomChoiceBehaviour(this, WorldAgent.TIME_STEP*5));
         addBehaviour(new HandleRoomResponseBehaviour());
     }
 

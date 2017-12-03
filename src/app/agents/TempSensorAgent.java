@@ -12,6 +12,6 @@ public class TempSensorAgent extends BaseSensorAgent {
     protected void setup() {
 
         super.setup();
-        addBehaviour(new SensorBehaviour<>(this, 1000, conversationId, SensorEnum.TEMPERATURE));
+        addBehaviour(new SensorBehaviour<>(this, WorldAgent.TIME_STEP, conversationId, SensorEnum.TEMPERATURE));
     }
 }

@@ -18,7 +18,7 @@ public class MotionSensor extends BaseSensorAgent {
         super.setup();
 
         addBehaviour(new StartupBehaviour());
-        addBehaviour(new SensorBehaviour<>(this, 500, conversationId, SensorEnum.MOTION));
+        addBehaviour(new SensorBehaviour<>(this, WorldAgent.TIME_STEP, conversationId, SensorEnum.MOTION));
     }
 
     @Override

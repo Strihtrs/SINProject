@@ -57,8 +57,8 @@ public class RoomAgent extends Agent {
         addBehaviour(new PersonEntersRoomBehaviour());
         addBehaviour(new OfferSensorServer());
         addBehaviour(new PersonLeavesRoomBehaviour());
-        addBehaviour(new TemperatureBehaviour(this, 1000));
-        addBehaviour(new HeatingBehaviour(this, 1000));
+        addBehaviour(new TemperatureBehaviour(this, WorldAgent.TIME_STEP));
+        addBehaviour(new HeatingBehaviour(this, WorldAgent.TIME_STEP));
         addBehaviour(new HeatingSwitchBehaviour());
     }
 
@@ -143,7 +143,7 @@ public class RoomAgent extends Agent {
 
     class HeatingBehaviour extends TickerBehaviour {
 
-        float heatingStep = (float) 1.5;
+        float heatingStep = (float) 2;
 
         HeatingBehaviour(Agent a, long period) {
             super(a, period);
@@ -218,9 +218,6 @@ public class RoomAgent extends Agent {
                                     reply.setContent(((RoomAgent) myAgent).getTemperature() + "");
                                 }
                                 myAgent.send(reply);
-                                break;
-                            case RAIN:
-
                                 break;
                             case MOTION:
                                 reply.setContent((((RoomAgent) myAgent).peopleCount > 0) ? "On" : "Off");

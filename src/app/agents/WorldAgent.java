@@ -14,7 +14,9 @@ import org.joda.time.LocalTime;
 
 import java.util.*;
 
+
 public class WorldAgent extends RoomAgent {
+    public static final int  TIME_STEP = 1000;
 
     private int peopleInWorld;
 
@@ -41,9 +43,9 @@ public class WorldAgent extends RoomAgent {
         peopleContainer = Runtime.instance().createAgentContainer(pee);
 
         addBehaviour(new InitBehaviour());
-        addBehaviour(new TimeBehaviour(this, 2000));
+        addBehaviour(new TimeBehaviour(this, TIME_STEP));
         //addBehaviour(new OfferRequestServer());
-        addBehaviour(new PersonSpawnBehaviour(this, 1000));
+        addBehaviour(new PersonSpawnBehaviour(this, TIME_STEP));
 
         super.setup();
     }
@@ -166,7 +168,7 @@ public class WorldAgent extends RoomAgent {
 
         @Override
         public void onTick() {
-            worldAgent.time = time.plusMinutes(28);
+            worldAgent.time = time.plusMinutes(10);
         }
     }
 
@@ -178,7 +180,7 @@ public class WorldAgent extends RoomAgent {
 
         @Override
         protected void onTick() {
-            if (peopleInWorld < 2 && new Random().nextFloat() > 0.5) {
+            if (peopleInWorld < 3 && new Random().nextFloat() > 0.5) {
                 try {
                     peopleContainer
                             .createNewAgent(new NameGenerator().generateName().getFirstName() + time.millisOfDay().getAsText(), PersonAgent.class.getCanonicalName(), null)

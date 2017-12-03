@@ -72,7 +72,6 @@ public class BaseSensorAgent extends Agent {
         switch (type) {
             case LUX:
                 return url + "param=udevice&idx=" + idx + "&svalue=" + value;
-            case RAIN:
             case TEMPERATURE:
                 return url + "param=udevice&idx=" + idx + "&nvalue=0&svalue=" + value;
             case MOTION:
@@ -122,7 +121,6 @@ public class BaseSensorAgent extends Agent {
                         if (shouldSend(content)) {
                             try {
                                 Unirest.get(getUrl(sensorType, content, agent.getIDX())).asJson();
-                                //System.out.println(content + " " + reply.getSender().getLocalName());
                             } catch (UnirestException e) {
                                 e.printStackTrace();
                             }
